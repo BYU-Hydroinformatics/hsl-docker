@@ -1,0 +1,13 @@
+version: "3.2"
+services:
+  hydroserver:
+    build: .
+    ports:
+      - "80:80"
+    environment:
+      HS_DB_NAME: "hydrodb"
+      HS_DB_USERNAME: "hydrouser"
+      HS_DB_USERNAME_PASS: "mypass"
+    restart: always
+    volumes:
+      - ./data_mysql:/var/lib/mysql
