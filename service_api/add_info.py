@@ -19,7 +19,7 @@ class HS:
                 values_df['dates'] = values_df['dates'].dt.strftime("%Y-%m-%d %H:%M:%S")
                 values = list(values_df.values.to_records(index=False))
                 data['values'] = values
-                
+
             postdata = json.dumps(data)
             uploadURL = f'{data['uploadURL']}/{type_data}'
             req = urllib.request.Request(uploadURL)
@@ -40,21 +40,22 @@ if __name__ == "__main__":
         type_data = sys.argv[1]
     except IndexError:
         print("You need to provide a type_data: sites, values, variables, sources")
-
+        sys.exit(1)
     try:
         path_file = sys.argv[2]
     except IndexError:
         print("You need to provide a file path containing the data to add to the database")
-
+        sys.exit(1)
     try:
         username = sys.argv[3]
     except IndexError:
         print("You need to provide the username for the HydroServerLite Account")
-
+        sys.exit(1)
     try:
         password = sys.argv[4]
     except IndexError:
         print("You need to provide a password for the HydroServerLite Account")
+        sys.exit(1)
 
     hydroservice = HS()
-    hydroservice.addInformation()
+    hydroservice.addInformation(type_data,path_file,username,password)
