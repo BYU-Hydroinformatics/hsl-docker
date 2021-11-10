@@ -7,11 +7,7 @@ import random
 import pandas as pd
 
 class HS:
-    def addInformation():
-        type_data = sys.argv[1]
-        path_file = sys.argv[2]
-        username = sys.argv[3]
-        password = sys.argv[4]
+    def addInformation(type_data,path_file,username,password):
 
         df = pd.read_csv(path_file,header=0)
         data_list = df.to_dict('records')
@@ -23,7 +19,7 @@ class HS:
                 values_df['dates'] = values_df['dates'].dt.strftime("%Y-%m-%d %H:%M:%S")
                 values = list(values_df.values.to_records(index=False))
                 data['values'] = values
-
+                
             postdata = json.dumps(data)
             uploadURL = f'{data['uploadURL']}/{type_data}'
             req = urllib.request.Request(uploadURL)
@@ -40,5 +36,25 @@ class HS:
                 continue
 
 if __name__ == "__main__":
+    try:
+        type_data = sys.argv[1]
+    except IndexError:
+        print("You need to provide a type_data: sites, values, variables, sources")
+
+    try:
+        path_file = sys.argv[2]
+    except IndexError:
+        print("You need to provide a file path containing the data to add to the database")
+
+    try:
+        username = sys.argv[3]
+    except IndexError:
+        print("You need to provide the username for the HydroServerLite Account")
+
+    try:
+        password = sys.argv[4]
+    except IndexError:
+        print("You need to provide a password for the HydroServerLite Account")
+
     hydroservice = HS()
     hydroservice.addInformation()
