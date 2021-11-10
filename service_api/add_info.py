@@ -87,7 +87,7 @@ import pandas as pd
 
     # "MethodDescription": "Any MethodDescription",
     # "MethodLink": "Any MethodLink",
-    # "VariableID": "Any VariableID",
+    # "MethodID": "Any MethodID",
 
 class HS:
     def addInformation(type_data,path_file,username,password):
