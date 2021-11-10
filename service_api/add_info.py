@@ -6,6 +6,11 @@ import datetime
 import random
 import pandas as pd
 
+# Use the following command #
+
+# Use any of the options [sites,sources,variables,data_values,methods] as the first arg
+# python add_info.py [sites,sources,variables,data_values,methods] path_file username password
+
 # To add Sites Make sure you have the following columns #
 
     # SourceID,SiteName,SiteCode,Latitude,Longitude,
@@ -76,6 +81,13 @@ import pandas as pd
     # The file from the file_path shuld have the date column called "dates"
 
 
+# To add Methods Make sure you have the following columns #
+
+    # MethodDescription,MethodLink,VariableID
+
+    # "MethodDescription": "Any MethodDescription",
+    # "MethodLink": "Any MethodLink",
+    # "VariableID": "Any VariableID",
 
 class HS:
     def addInformation(type_data,path_file,username,password):
@@ -84,7 +96,7 @@ class HS:
         for data in data_list:
             data['user'] = username
             data['password'] = password
-            if type_data == 'values':
+            if type_data == 'data_values':
                 values_df = pd.read_csv(data['file_path'],header=0)
                 values_df['dates'] = values_df['dates'].dt.strftime("%Y-%m-%d %H:%M:%S")
                 values = list(values_df.values.to_records(index=False))
