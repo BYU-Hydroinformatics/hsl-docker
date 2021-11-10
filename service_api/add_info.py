@@ -9,7 +9,7 @@ import pandas as pd
 # Use the following command #
 
 # Use any of the options [sites,sources,variables,data_values,methods] as the first arg
-# python add_info.py [sites,sources,variables,data_values,methods] path_file username password
+# python add_info.py [sites,sources,variables,data_values,methods] url path_file username password
 
 # To add Sites Make sure you have the following columns #
 
@@ -90,7 +90,7 @@ import pandas as pd
     # "MethodID": "Any MethodID",
 
 class HS:
-    def addInformation(type_data,path_file,username,password):
+    def addInformation(type_data,url,path_file,username,password):
         df = pd.read_csv(path_file,header=0)
         data_list = df.to_dict('records')
         for data in data_list:
@@ -103,7 +103,7 @@ class HS:
                 data['values'] = values
 
             postdata = json.dumps(data)
-            uploadURL = f'{data['uploadURL']}/{type_data}'
+            uploadURL = f'{url}/{type_data}'
             req = urllib.request.Request(uploadURL)
             req.add_header('Content-Type', 'application/json')
             try:
@@ -124,20 +124,25 @@ if __name__ == "__main__":
         print("You need to provide a type_data: sites, values, variables, sources")
         sys.exit(1)
     try:
-        path_file = sys.argv[2]
+        url = sys.argv[2]
+    except IndexError:
+        print("You need to provide a type_data: sites, values, variables, sources")
+        sys.exit(1)
+    try:
+        path_file = sys.argv[3]
     except IndexError:
         print("You need to provide a file path containing the data to add to the database")
         sys.exit(1)
     try:
-        username = sys.argv[3]
+        username = sys.argv[4]
     except IndexError:
         print("You need to provide the username for the HydroServerLite Account")
         sys.exit(1)
     try:
-        password = sys.argv[4]
+        password = sys.argv[5]
     except IndexError:
         print("You need to provide a password for the HydroServerLite Account")
         sys.exit(1)
 
     hydroservice = HS()
-    hydroservice.addInformation(type_data,path_file,username,password)
+    hydroservice.addInformation(type_data,url, path_file,username,password)
