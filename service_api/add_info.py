@@ -106,7 +106,7 @@ import numpy as np
 
     # "MethodDescription": "Any MethodDescription",
     # "MethodLink": "Any MethodLink",
-    # "MethodID": "Any MethodID",
+    # "VariableID": "Any VariableID",
 
 class HS:
     def addInformation(self, type_data, url, path_file, username, password):
