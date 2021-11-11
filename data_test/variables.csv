@@ -1,0 +1,3 @@
+VariableCode,VariableName,Speciation,VariableUnitsID,SampleMedium,ValueType,IsRegular,TimeSupport,TimeUnitsID,DataType,GeneralCategory,NoDataValue
+"WL","Water depth","Not Applicable",190,"Surface Water","Sample",1,0,100,"Continuous","Hydrology",-9999
+"Q","Streamflow","Not Applicable",189,"Surface Water","Sample",1,0,100,"Continuous","Hydrology",-9999

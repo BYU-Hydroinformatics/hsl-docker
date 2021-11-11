@@ -1,0 +1,5 @@
+SiteID,VariableID,MethodID,SourceID,file_path
+7,2,1,2,"../data_test/23097030_Q.csv"
+7,5,1,2,"../data_test/23097030_WL.csv"
+8,2,1,2,"../data_test/23037010_Q.csv"
+8,5,1,2,"../data_test/23037010_WL.csv"

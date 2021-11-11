@@ -5,11 +5,19 @@ import json
 import datetime
 import random
 import pandas as pd
+import numpy as np
+
 
 # Use the following command #
 
-# Use any of the options [sites,sources,variables,data_values,methods] as the first arg
+# Use any of the options [sites,sources,variables,values,methods] as the first arg
 # python add_info.py [sites,sources,variables,data_values,methods] url path_file username password
+
+# Use the folliwing order when adding data for the first time #
+# first upload Sources
+# second upload Sites
+# third upload Variables
+# fourth upload DataValues
 
 # To add Sites Make sure you have the following columns #
 
@@ -18,7 +26,7 @@ import pandas as pd
 
     # Example
 
-    # "SourceID": 35,
+    # "SiteID": 35,
     # "SiteName": "siteName",
     # "SiteCode": "site1ID",
     # "Latitude": 46.535,
@@ -26,6 +34,10 @@ import pandas as pd
     # "SiteType": "Atmosphere",
     # "Elevation_m": 256,
     # "Comments": "site uploaded from Python"
+
+    # Please check the posible sitetypes uisng the following command:
+
+    # Select * FROM sitetypecv;
 
 
 # To add Variables Make sure you have the following columns #
@@ -40,7 +52,7 @@ import pandas as pd
     # "VariableName": "Color",
     # "Speciation": "Not Applicable",
     # "VariableUnitsID": 189,
-    # "SampleMedium": "Groundwater",
+    # "SampleMedium": "Surface Water",
     # "ValueType": "Sample",
     # "IsRegular": 1,
     # "TimeSupport": 0,
@@ -68,6 +80,11 @@ import pandas as pd
     # "citation": "uploaded from python as a test",
     # "metadata": 10
 
+    # You need to check the metadata values that already exits in the isometadata table by using the following.
+    # Select * FROM isometadata;
+    # you need to go inside the container for this and activate mysql
+
+
 # To add DataValues Make sure you have the following columns #
 
     # SiteID,VariableID,MethodID,SourceID,file_path
@@ -78,7 +95,7 @@ import pandas as pd
     # "SourceID": "Any sourceID",
     # "file_path": "/path/to/file/containing/data/for/the/variable"
 
-    # The file from the file_path shuld have the date column called "dates"
+    # The file from the file_path shuld have the date column called "LocalDateTime"
 
 
 # To add Methods Make sure you have the following columns #
@@ -90,31 +107,38 @@ import pandas as pd
     # "MethodID": "Any MethodID",
 
 class HS:
-    def addInformation(type_data,url,path_file,username,password):
+    def addInformation(self, type_data, url, path_file, username, password):
         df = pd.read_csv(path_file,header=0)
+        df = df.astype(object).replace(np.nan, 'None')
+        print(df)
         data_list = df.to_dict('records')
+        print(data_list)
         for data in data_list:
             data['user'] = username
             data['password'] = password
-            if type_data == 'data_values':
+            if type_data == 'values':
                 values_df = pd.read_csv(data['file_path'],header=0)
-                values_df['dates'] = values_df['dates'].dt.strftime("%Y-%m-%d %H:%M:%S")
-                values = list(values_df.values.to_records(index=False))
+                values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
+                values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
+                print(values_df)
+                # values = list(values_df.to_records(index=False))
+                values = values_df.values.tolist()
                 data['values'] = values
+                # print(data['values'])
 
             postdata = json.dumps(data)
             uploadURL = f'{url}/{type_data}'
             req = urllib.request.Request(uploadURL)
             req.add_header('Content-Type', 'application/json')
             try:
-                response = urllib.request.urlopen(req, postdata)
-                print response.read()
+                response = urllib.request.urlopen(req, postdata.encode('utf-8'))
+                print (response.read())
                 continue
-            except urllib.error.HTTPError, e:
-                print e.code
-                print e.msg
-                print e.headers
-                print e.fp.read()
+            except urllib.error.HTTPError as e:
+                print (e.code)
+                print (e.msg)
+                print (e.headers)
+                print (e.fp.read())
                 continue
 
 if __name__ == "__main__":
@@ -145,4 +169,4 @@ if __name__ == "__main__":
         sys.exit(1)
 
     hydroservice = HS()
-    hydroservice.addInformation(type_data,url, path_file,username,password)
+    hydroservice.addInformation(type_data, url, path_file, username, password)
