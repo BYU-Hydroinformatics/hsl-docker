@@ -19,6 +19,8 @@ import numpy as np
 # third upload Variables
 # fourth upload DataValues
 
+# If you get any error, refer to it and go to the mysql database if you need further reference.
+
 # To add Sites Make sure you have the following columns #
 
     # SourceID,SiteName,SiteCode,Latitude,Longitude,
