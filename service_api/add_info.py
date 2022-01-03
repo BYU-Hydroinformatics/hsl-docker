@@ -6,7 +6,8 @@ import datetime
 import random
 import pandas as pd
 import numpy as np
-
+import asyncio
+import aiohttp
 
 # Use the following command #
 
@@ -109,19 +110,16 @@ import numpy as np
     # "VariableID": "Any VariableID",
 
 class HS:
-    def addInformation(self, type_data, url, path_file, username, password):
-        df = pd.read_csv(path_file,header=0)
-        df = df.astype(object).replace(np.nan, 'None')
-        print(df)
-        data_list = df.to_dict('records')
-        print(data_list)
+
+    def gather_data(self,data_list, session):
+        re_list = []
         for data in data_list:
             data['user'] = username
             data['password'] = password
             if type_data == 'values':
                 try:
                     values_df = pd.read_csv(data['file_path'],header=0)
-                except Exception as e
+                except Exception as e:
                     print (e.code)
                     print (e.msg)
                     print (e.headers)
@@ -135,20 +133,59 @@ class HS:
                 data['values'] = values
                 # print(data['values'])
 
-            postdata = json.dumps(data)
+            # postdata = json.dumps(data)
             uploadURL = f'{url}/{type_data}'
-            req = urllib.request.Request(uploadURL)
-            req.add_header('Content-Type', 'application/json')
-            try:
-                response = urllib.request.urlopen(req, postdata.encode('utf-8'))
-                print (response.read())
-                continue
-            except urllib.error.HTTPError as e:
-                print (e.code)
-                print (e.msg)
-                print (e.headers)
-                print (e.fp.read())
-                continue
+            re_list.append(session.post(uploadURL, data=data, ssl=False))
+        return re_list
+
+    async def get_data_values(self,data_list):
+        async with aiohttp.ClientSession() as session:
+            req_list = self.gather_data(data_list,session)
+            responses = await asyncio.gather(*req_list)
+
+
+    def addInformation(self, type_data, url, path_file, username, password):
+        df = pd.read_csv(path_file,header=0)
+        df = df.astype(object).replace(np.nan, 'None')
+        print(df)
+        data_list = df.to_dict('records')
+        print(data_list)
+        return data_list
+
+        # for data in data_list:
+        #     data['user'] = username
+        #     data['password'] = password
+        #     if type_data == 'values':
+        #         try:
+        #             values_df = pd.read_csv(data['file_path'],header=0)
+        #         except Exception as e
+        #             print (e.code)
+        #             print (e.msg)
+        #             print (e.headers)
+        #             print (e.fp.read())
+        #             continue
+        #         values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
+        #         values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
+        #         print(values_df)
+        #         # values = list(values_df.to_records(index=False))
+        #         values = values_df.values.tolist()
+        #         data['values'] = values
+        #         # print(data['values'])
+        #
+        #     postdata = json.dumps(data)
+        #     uploadURL = f'{url}/{type_data}'
+        #     req = urllib.request.Request(uploadURL)
+        #     req.add_header('Content-Type', 'application/json')
+        #     try:
+        #         response = urllib.request.urlopen(req, postdata.encode('utf-8'))
+        #         print (response.read())
+        #         continue
+        #     except urllib.error.HTTPError as e:
+        #         print (e.code)
+        #         print (e.msg)
+        #         print (e.headers)
+        #         print (e.fp.read())
+        #         continue
 
 if __name__ == "__main__":
     try:
@@ -178,4 +215,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     hydroservice = HS()
-    hydroservice.addInformation(type_data, url, path_file, username, password)
+    # hydroservice.addInformation(type_data, url, path_file, username, password)
+    data_list = hydroservice.addInformation(type_data, url, path_file, username, password)
+    asyncio.run(hydroservice.get_data_values(data_list))
