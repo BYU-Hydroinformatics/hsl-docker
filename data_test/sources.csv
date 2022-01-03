@@ -1,2 +1,3 @@
 name,organization,description,link,phone,email,address,city,state,zipcode,citation,metadata
-source1,IDEAM, fortus fortuna, http://no-mientas.com,80635658,nomientas@gmail.com,calle paramilitar feliz, Medellin, Colombia,4566332, Nohay,1
+source1,IDEAM,"Instituto de Hidrologia, Meteorologia y Estudios Ambientales",http://www.ideam.gov.co/,(+57) (601) 3075625,atencionalciudadano@ideam.gov.co,Calle 25 D No. 96 B - 70, Bogot‡ D.C., Colombia,110911, Nohay,1
+source2,INAMHI,Instituto Nacional de Meteorologia e Hidrologia,http://www.inamhi.gob.ec/,(+593) (2) 3971100,servicio@inamhi.gob.ec,Nunez de Vela N36-15 y Corea,Quito,Ecuador,170507, Nohay,1

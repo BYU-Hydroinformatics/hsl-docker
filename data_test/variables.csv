@@ -1,3 +1,8 @@
 VariableCode,VariableName,Speciation,VariableUnitsID,SampleMedium,ValueType,IsRegular,TimeSupport,TimeUnitsID,DataType,GeneralCategory,NoDataValue
-"WL","Water depth","Not Applicable",190,"Surface Water","Sample",1,0,100,"Continuous","Hydrology",-9999
-"Q","Streamflow","Not Applicable",189,"Surface Water","Sample",1,0,100,"Continuous","Hydrology",-9999
+WL,Water depth,Not Applicable,47,Surface Water,Sample,1,0,100,Continuous,Hydrology,-9999
+Q,Streamflow,Not Applicable,36,Surface Water,Sample,1,0,100,Continuous,Hydrology,-9999
+P,Precipitation,Not Applicable,188,Precipitation,Sample,1,0,100,Continuous,Climate,-9999
+Ev,Evaporation,Not Applicable,188,Air,Sample,1,0,100,Continuous,Climate,-9999
+RH,Relative humidity,Not Applicable,1,Air,Sample,1,0,100,Continuous,Climate,-9999
+Tmax,Temperature,Not Applicable,96,Air,Sample,1,0,100,Continuous,Climate,-9999
+Tmin,Temperature,Not Applicable,96,Air,Sample,1,0,100,Continuous,Climate,-9999
