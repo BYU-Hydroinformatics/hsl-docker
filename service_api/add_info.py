@@ -119,7 +119,14 @@ class HS:
             data['user'] = username
             data['password'] = password
             if type_data == 'values':
-                values_df = pd.read_csv(data['file_path'],header=0)
+                try:
+                    values_df = pd.read_csv(data['file_path'],header=0)
+                except Exception as e
+                    print (e.code)
+                    print (e.msg)
+                    print (e.headers)
+                    print (e.fp.read())
+                    continue
                 values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
                 values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
                 print(values_df)
