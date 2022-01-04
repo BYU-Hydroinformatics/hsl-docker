@@ -111,7 +111,7 @@ import aiohttp
 
 class HS:
 
-    def gather_data(self,data_list, session):
+    def gather_data(self,data_list, session,username, password):
         re_list = []
         for data in data_list:
             data['user'] = username
@@ -127,29 +127,37 @@ class HS:
                     continue
                 values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
                 values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
-                print(values_df)
+                # print(values_df)
                 # values = list(values_df.to_records(index=False))
                 values = values_df.values.tolist()
                 data['values'] = values
                 # print(data['values'])
 
-            # postdata = json.dumps(data)
+            postdata = json.dumps(data)
             uploadURL = f'{url}/{type_data}'
-            re_list.append(session.post(uploadURL, data=data, ssl=False))
+            # print(postdata)
+            re_list.append(asyncio.create_task(session.post(uploadURL, data=postdata, ssl=False)))
         return re_list
 
-    async def get_data_values(self,data_list):
-        async with aiohttp.ClientSession() as session:
-            req_list = self.gather_data(data_list,session)
-            responses = await asyncio.gather(*req_list)
+    async def get_data_values(self,data_list,username, password):
+        results = []
+        try:
+            async with aiohttp.ClientSession() as session:
+                req_list = self.gather_data(data_list,session,username, password)
+                responses = await asyncio.gather(*req_list)
+                for response in responses:
+                    print(response)
+        except asyncio.TimeoutError as e:
+            print {"results": f"timeout error on {e}"}
+                # print(await response.json())
+                # results.append(await response.json())
 
-
-    def addInformation(self, type_data, url, path_file, username, password):
+    def addInformation(self, type_data, url, path_file):
         df = pd.read_csv(path_file,header=0)
         df = df.astype(object).replace(np.nan, 'None')
-        print(df)
+        # print(df)
         data_list = df.to_dict('records')
-        print(data_list)
+        # print(data_list)
         return data_list
 
         # for data in data_list:
@@ -216,5 +224,5 @@ if __name__ == "__main__":
 
     hydroservice = HS()
     # hydroservice.addInformation(type_data, url, path_file, username, password)
-    data_list = hydroservice.addInformation(type_data, url, path_file, username, password)
-    asyncio.run(hydroservice.get_data_values(data_list))
+    data_list = hydroservice.addInformation(type_data, url, path_file)
+    asyncio.run(hydroservice.get_data_values(data_list, username, password))
