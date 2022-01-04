@@ -148,7 +148,7 @@ class HS:
                 for response in responses:
                     print(response)
         except asyncio.TimeoutError as e:
-            print {"results": f"timeout error on {e}"}
+            print (e)
                 # print(await response.json())
                 # results.append(await response.json())
 
