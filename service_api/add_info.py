@@ -163,10 +163,11 @@ class HS:
     async def get_data_values(self,data_list):
         results = []
         asyncio_semaphore = asyncio.Semaphore(200)
-        timeout = aiohttp.ClientTimeout(total=5*60)
+        timeout = aiohttp.ClientTimeout(total=100000)
 
         try:
-            conn = aiohttp.TCPConnector(limit=100)
+            conn = aiohttp.TCPConnector()
+            # conn = aiohttp.TCPConnector(limit=100)
 
             async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
             # async with aiohttp.ClientSession() as session:
