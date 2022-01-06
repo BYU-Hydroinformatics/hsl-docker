@@ -162,8 +162,8 @@ class HS:
 
     async def get_data_values(self,data_list):
         results = []
-        asyncio_semaphore = asyncio.Semaphore(100)
-        timeout = aiohttp.ClientTimeout(total=1000)
+        asyncio_semaphore = asyncio.Semaphore(200)
+        timeout = aiohttp.ClientTimeout(total=5*60)
 
         try:
             conn = aiohttp.TCPConnector(limit=100)
@@ -232,5 +232,10 @@ if __name__ == "__main__":
     hydroservice = HS(type_data,url,path_file,username,password)
     # hydroservice.addInformation(type_data, url, path_file, username, password)
     data_list = hydroservice.addInformation()
+    # n = 5
+    # data_list_chunks = [data_list[i * n:(i + 1) * n] for i in range((len(data_list) + n - 1) // n )]
+    # for chunk in data_list_chunks:
+    #     asyncio.run(hydroservice.get_data_values(chunk))
+
     # print(data_list)
     asyncio.run(hydroservice.get_data_values(data_list))
