@@ -12,7 +12,7 @@ import aiohttp
 # Use the following command #
 
 # Use any of the options [sites,sources,variables,values,methods] as the first arg
-# python add_info.py [sites,sources,variables,data_values,methods] url path_file username password
+# python add_info.py [sites,sources,variables,values,methods] url path_file username password
 
 # Use the folliwing order when adding data for the first time #
 # first upload Sources
@@ -111,89 +111,96 @@ import aiohttp
 
 class HS:
 
-    def gather_data(self,data_list, session,username, password):
-        re_list = []
-        for data in data_list:
-            data['user'] = username
-            data['password'] = password
-            if type_data == 'values':
-                try:
-                    values_df = pd.read_csv(data['file_path'],header=0)
-                except Exception as e:
-                    print (e.code)
-                    print (e.msg)
-                    print (e.headers)
-                    print (e.fp.read())
-                    continue
-                values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
-                values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
-                # print(values_df)
-                # values = list(values_df.to_records(index=False))
+    # parameterized constructor to make easier the args in the functions
+    def __init__(self,type_data,url,path_file,username,password):
+        self.type_data = type_data
+        self.url = url
+        self.path_file = path_file
+        self.username = username
+        self.password = password
+
+    # Single request
+    async def get_single_request(self, session, uploadURL, postdata):
+        try:
+            async with session.post(uploadURL, data=postdata, ssl=False) as response:
+                return await response.read()
+        except Exception as e:
+            return e, 'Error'
+
+
+    async def bound_single_request(self,asyncio_semaphore, session, data):
+
+        async with asyncio_semaphore:
+            data['user'] = self.username
+            data['password'] = self.password
+            if self.type_data == 'values':
+
+                values_df = pd.read_csv(data['file_path'],header=0)
+                values_df.iloc[:, 0] = pd.to_datetime(values_df.iloc[:, 0])
+                values_df.iloc[:, 0] = values_df.iloc[:, 0].dt.strftime("%Y-%m-%d %H:%M:%S")
                 values = values_df.values.tolist()
                 data['values'] = values
-                # print(data['values'])
 
             postdata = json.dumps(data)
-            uploadURL = f'{url}/{type_data}'
-            # print(postdata)
-            re_list.append(asyncio.create_task(session.post(uploadURL, data=postdata, ssl=False)))
+            uploadURL = f'{self.url}/{self.type_data}'
+            return await self.get_single_request(session, uploadURL, postdata)
+
+    # gather all the different requests
+    def gather_data(self,data_list,session,asyncio_semaphore):
+        re_list = []
+        for data in data_list:
+            try:
+                sing_req = asyncio.ensure_future(self.bound_single_request(asyncio_semaphore, session, data))
+                re_list.append(sing_req)
+            except Exception as e:
+                print (e.code)
+                print (e.msg)
+                print (e.headers)
+                print (e.fp.read())
+                continue
         return re_list
 
-    async def get_data_values(self,data_list,username, password):
+    async def get_data_values(self,data_list):
         results = []
+        asyncio_semaphore = asyncio.Semaphore(100)
+        timeout = aiohttp.ClientTimeout(total=1000)
+
         try:
-            async with aiohttp.ClientSession() as session:
-                req_list = self.gather_data(data_list,session,username, password)
+            conn = aiohttp.TCPConnector(limit=100)
+
+            async with aiohttp.ClientSession(connector=conn, timeout=timeout) as session:
+            # async with aiohttp.ClientSession() as session:
+                req_list = self.gather_data(data_list,session,asyncio_semaphore)
                 responses = await asyncio.gather(*req_list)
                 for response in responses:
                     print(response)
         except asyncio.TimeoutError as e:
             print (e)
-                # print(await response.json())
-                # results.append(await response.json())
 
-    def addInformation(self, type_data, url, path_file):
-        df = pd.read_csv(path_file,header=0)
+    def addInformation(self):
+        df = pd.read_csv(self.path_file,header=0)
         df = df.astype(object).replace(np.nan, 'None')
-        # print(df)
         data_list = df.to_dict('records')
-        # print(data_list)
+        data_list = self.sortByRowNumber(data_list)
         return data_list
 
-        # for data in data_list:
-        #     data['user'] = username
-        #     data['password'] = password
-        #     if type_data == 'values':
-        #         try:
-        #             values_df = pd.read_csv(data['file_path'],header=0)
-        #         except Exception as e
-        #             print (e.code)
-        #             print (e.msg)
-        #             print (e.headers)
-        #             print (e.fp.read())
-        #             continue
-        #         values_df['LocalDateTime'] = pd.to_datetime(values_df['LocalDateTime'])
-        #         values_df['LocalDateTime'] = values_df['LocalDateTime'].dt.strftime("%Y-%m-%d %H:%M:%S")
-        #         print(values_df)
-        #         # values = list(values_df.to_records(index=False))
-        #         values = values_df.values.tolist()
-        #         data['values'] = values
-        #         # print(data['values'])
-        #
-        #     postdata = json.dumps(data)
-        #     uploadURL = f'{url}/{type_data}'
-        #     req = urllib.request.Request(uploadURL)
-        #     req.add_header('Content-Type', 'application/json')
-        #     try:
-        #         response = urllib.request.urlopen(req, postdata.encode('utf-8'))
-        #         print (response.read())
-        #         continue
-        #     except urllib.error.HTTPError as e:
-        #         print (e.code)
-        #         print (e.msg)
-        #         print (e.headers)
-        #         print (e.fp.read())
-        #         continue
+    # Sort list
+    def sortByRowNumber(self,data_list):
+        sorted_list = []
+        unsorted_dict = {}
+        if self.type_data == 'values':
+            for data in data_list:
+                values_df = pd.read_csv(data['file_path'],header=0)
+                num_rows = values_df[values_df.columns[0]].count()
+                unsorted_dict[num_rows] = data
+
+            sorted_dict = dict(sorted(unsorted_dict.items()))
+            print(sorted_dict)
+            sorted_list = list(sorted_dict.values())
+            return sorted_list
+
+        return data_list
+
 
 if __name__ == "__main__":
     try:
@@ -222,7 +229,8 @@ if __name__ == "__main__":
         print("You need to provide a password for the HydroServerLite Account")
         sys.exit(1)
 
-    hydroservice = HS()
+    hydroservice = HS(type_data,url,path_file,username,password)
     # hydroservice.addInformation(type_data, url, path_file, username, password)
-    data_list = hydroservice.addInformation(type_data, url, path_file)
-    asyncio.run(hydroservice.get_data_values(data_list, username, password))
+    data_list = hydroservice.addInformation()
+    # print(data_list)
+    asyncio.run(hydroservice.get_data_values(data_list))
