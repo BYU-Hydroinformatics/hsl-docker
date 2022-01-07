@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import asyncio
 import aiohttp
+import time
 
 # Use the following command #
 
@@ -173,6 +174,7 @@ class HS:
             # async with aiohttp.ClientSession() as session:
                 req_list = self.gather_data(data_list,session,asyncio_semaphore)
                 responses = await asyncio.gather(*req_list)
+                # responses = await asyncio.wait(*req_list, return_when=asyncio.ALL_COMPLETED)
                 for response in responses:
                     print(response)
         except asyncio.TimeoutError as e:
@@ -204,6 +206,8 @@ class HS:
 
 
 if __name__ == "__main__":
+    startTime = time.time()
+
     try:
         type_data = sys.argv[1]
     except IndexError:
@@ -233,10 +237,16 @@ if __name__ == "__main__":
     hydroservice = HS(type_data,url,path_file,username,password)
     # hydroservice.addInformation(type_data, url, path_file, username, password)
     data_list = hydroservice.addInformation()
-    # n = 5
-    # data_list_chunks = [data_list[i * n:(i + 1) * n] for i in range((len(data_list) + n - 1) // n )]
-    # for chunk in data_list_chunks:
-    #     asyncio.run(hydroservice.get_data_values(chunk))
-
+    n = 15
+    data_list_chunks = [data_list[i * n:(i + 1) * n] for i in range((len(data_list) + n - 1) // n )]
+    index_i = 1
+    for chunk in data_list_chunks:
+        print(f'Loading {index_i}/{len(data_list_chunks)}, size: {len(chunk)}')
+        asyncio.run(hydroservice.get_data_values(chunk))
+        executionTime = (time.time() - startTime)
+        print(f'Execution time (s) for {index_i}/{len(data_list_chunks)}: ' + str(executionTime))
+        index_i = index_i + 1
+    executionTime = (time.time() - startTime)
+    print('Total Execution time in seconds: ' + str(executionTime))
     # print(data_list)
-    asyncio.run(hydroservice.get_data_values(data_list))
+    # asyncio.run(hydroservice.get_data_values(data_list))
