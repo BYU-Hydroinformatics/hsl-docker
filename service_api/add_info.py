@@ -8,6 +8,7 @@ import pandas as pd
 import numpy as np
 import asyncio
 import aiohttp
+import time
 
 # Use the following command #
 
@@ -119,6 +120,27 @@ class HS:
         self.username = username
         self.password = password
 
+    # Synchronious portion for sites, sources, and Variables
+    def synchLoading(self):
+        for data in data_list:
+            data['user'] = self.username
+            data['password'] = self.password
+            postdata = json.dumps(data)
+            uploadURL = f'{self.url}/{self.type_data}'
+            req = urllib.request.Request(uploadURL)
+            req.add_header('Content-Type', 'application/json')
+            try:
+                response = urllib.request.urlopen(req, postdata.encode('utf-8'))
+                print (response.read())
+                continue
+            except urllib.error.HTTPError as e:
+                print (e.code)
+                print (e.msg)
+                print (e.headers)
+                print (e.fp.read())
+                continue
+
+
     # Single request
     async def get_single_request(self, session, uploadURL, postdata):
         try:
@@ -133,13 +155,13 @@ class HS:
         async with asyncio_semaphore:
             data['user'] = self.username
             data['password'] = self.password
-            if self.type_data == 'values':
+            # if self.type_data == 'values':
 
-                values_df = pd.read_csv(data['file_path'],header=0)
-                values_df.iloc[:, 0] = pd.to_datetime(values_df.iloc[:, 0])
-                values_df.iloc[:, 0] = values_df.iloc[:, 0].dt.strftime("%Y-%m-%d %H:%M:%S")
-                values = values_df.values.tolist()
-                data['values'] = values
+            values_df = pd.read_csv(data['file_path'],header=0)
+            values_df.iloc[:, 0] = pd.to_datetime(values_df.iloc[:, 0])
+            values_df.iloc[:, 0] = values_df.iloc[:, 0].dt.strftime("%Y-%m-%d %H:%M:%S")
+            values = values_df.values.tolist()
+            data['values'] = values
 
             postdata = json.dumps(data)
             uploadURL = f'{self.url}/{self.type_data}'
@@ -173,6 +195,7 @@ class HS:
             # async with aiohttp.ClientSession() as session:
                 req_list = self.gather_data(data_list,session,asyncio_semaphore)
                 responses = await asyncio.gather(*req_list)
+                # responses = await asyncio.wait(*req_list, return_when=asyncio.ALL_COMPLETED)
                 for response in responses:
                     print(response)
         except asyncio.TimeoutError as e:
@@ -182,8 +205,11 @@ class HS:
         df = pd.read_csv(self.path_file,header=0)
         df = df.astype(object).replace(np.nan, 'None')
         data_list = df.to_dict('records')
-        data_list = self.sortByRowNumber(data_list)
-        return data_list
+        if self.type_data == 'values':
+            data_list = self.sortByRowNumber(data_list)
+            return data_list
+        else:
+            return data_list
 
     # Sort list
     def sortByRowNumber(self,data_list):
@@ -196,7 +222,7 @@ class HS:
                 unsorted_dict[num_rows] = data
 
             sorted_dict = dict(sorted(unsorted_dict.items()))
-            print(sorted_dict)
+            # print(sorted_dict)
             sorted_list = list(sorted_dict.values())
             return sorted_list
 
@@ -204,6 +230,8 @@ class HS:
 
 
 if __name__ == "__main__":
+    startTime = time.time()
+
     try:
         type_data = sys.argv[1]
     except IndexError:
@@ -229,14 +257,23 @@ if __name__ == "__main__":
     except IndexError:
         print("You need to provide a password for the HydroServerLite Account")
         sys.exit(1)
-
+    print(f'Loading {type_data}')
     hydroservice = HS(type_data,url,path_file,username,password)
     # hydroservice.addInformation(type_data, url, path_file, username, password)
     data_list = hydroservice.addInformation()
-    # n = 5
-    # data_list_chunks = [data_list[i * n:(i + 1) * n] for i in range((len(data_list) + n - 1) // n )]
-    # for chunk in data_list_chunks:
-    #     asyncio.run(hydroservice.get_data_values(chunk))
-
-    # print(data_list)
-    asyncio.run(hydroservice.get_data_values(data_list))
+    if type_data == 'values':
+        n = 15
+        data_list_chunks = [data_list[i * n:(i + 1) * n] for i in range((len(data_list) + n - 1) // n )]
+        index_i = 1
+        for chunk in data_list_chunks:
+            print(f'Loading {index_i}/{len(data_list_chunks)}, size: {len(chunk)}')
+            asyncio.run(hydroservice.get_data_values(chunk))
+            executionTime = (time.time() - startTime)
+            print(f'Execution time (s) for {index_i}/{len(data_list_chunks)}: ' + str(executionTime))
+            index_i = index_i + 1
+        # print(data_list)
+        # asyncio.run(hydroservice.get_data_values(data_list))
+    else:
+        hydroservice.synchLoading()
+    executionTime = (time.time() - startTime)
+    print('Total Execution time in seconds: ' + str(executionTime))
