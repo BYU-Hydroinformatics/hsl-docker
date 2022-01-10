@@ -11,3 +11,4 @@ services:
     restart: always
     volumes:
       - ./data_mysql:/var/lib/mysql
+    container_name: hs_d
