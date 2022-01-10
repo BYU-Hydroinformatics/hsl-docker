@@ -7,7 +7,5 @@ ADD db_config.sh .
 ADD hs_config.sh .
 ADD final_run.sh .
 ADD supervisord-hs.conf /etc/supervisor/conf.d
-ADD delete_duplicates.sh .
-RUN chmod +x /delete_duplicates.sh
 RUN chmod +x /final_run.sh
 CMD /bin/bash /run.sh
