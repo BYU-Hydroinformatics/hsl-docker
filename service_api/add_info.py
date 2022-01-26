@@ -157,7 +157,7 @@ class HS:
             data['password'] = self.password
             # if self.type_data == 'values':
 
-            values_df = pd.read_csv(data['file_path'],header=0)
+            values_df = pd.read_csv(data['file_path'],header=0, encoding='unicode_escape')
             values_df.iloc[:, 0] = pd.to_datetime(values_df.iloc[:, 0])
             values_df.iloc[:, 0] = values_df.iloc[:, 0].dt.strftime("%Y-%m-%d %H:%M:%S")
             values = values_df.values.tolist()
@@ -202,7 +202,7 @@ class HS:
             print (e)
 
     def addInformation(self):
-        df = pd.read_csv(self.path_file,header=0)
+        df = pd.read_csv(self.path_file,header=0,encoding='unicode_escape')
         df = df.astype(object).replace(np.nan, 'None')
         data_list = df.to_dict('records')
         if self.type_data == 'values':
@@ -217,7 +217,7 @@ class HS:
         unsorted_dict = {}
         if self.type_data == 'values':
             for data in data_list:
-                values_df = pd.read_csv(data['file_path'],header=0)
+                values_df = pd.read_csv(data['file_path'],header=0,encoding='unicode_escape')
                 num_rows = values_df[values_df.columns[0]].count()
                 unsorted_dict[num_rows] = data
 
