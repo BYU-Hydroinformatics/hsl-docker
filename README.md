@@ -12,17 +12,17 @@
 - Exporting data from a sql file
 
   - Run the following command to create the tables of the selected db
+
     - `cat <BACKUP_FILE.sql> | docker exec -i <CONTAINER_NAME> /usr/bin/mysql -u <USER> -p<PASSWORD> <DATABASENAME>`
-  - **Note** Do not run the installation at
+
+  - **Note** Do not fill the installation form at
 
     - _http://localhost/hydroserverlite/index.php/default/home/installation_
 
-    before doing this if you plan to import data from another hydroserver
+    if you plan to import data from another hydroserver with the previous point
 
   - Fill the installation form at:
-    - `<DOMAIN>/hydroserverlite/index.php/default/home/installation`
-    - Example:
-      - `http://localhost/hydroserverlite/index.php/default/home/installation`
+    - `http://localhost/hydroserverlite/index.php/default/home/installation`
 
 ## Notes
 
