@@ -3,9 +3,12 @@
 
 FROM mattrayner/lamp:latest-1604-php5
 
+RUN mkdir /mylogs
+RUN touch /mylogs/hs.log
 ADD db_config.sh .
 ADD hs_config.sh .
 ADD final_run.sh .
 ADD supervisord-hs.conf /etc/supervisor/conf.d
 RUN chmod +x /final_run.sh
+
 CMD /bin/bash /run.sh
