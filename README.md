@@ -7,6 +7,7 @@
 <p align="center">
 <img align= "center" src="https://img.shields.io/badge/license-BSD%203--Clause-yellow.svg" width="20%" height="20%"/>
 </p>
+
 ## 1. Description
 
 - This is the docker image for the **[HydroServerLite](https://github.com/CUAHSI/HydroServerLite)** project, but it does not uses such repository, but the one called [hsl-interactive](https://github.com/BYU-Hydroinformatics/hsl-interactive)
